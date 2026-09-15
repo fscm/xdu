@@ -1,0 +1,179 @@
+.\" SPDX-FileCopyrightText: 2026 Frederico Martins
+.\" SPDX-License-Identifier: GPL-3.0-only
+.\"
+.TH XDU 1 "2026-09-15" "xdu 0.1.0" "User Commands"
+.SH NAME
+xdu \- directory size, sort, and tree in one tool
+.SH SYNOPSIS
+.B xdu
+.RB [ \-a " | " \-\-all ]
+.RB [ \-c " | " \-\-total ]
+.RB [ \-C
+.IR mode
+.RB "| " \-\-color
+.IR mode ]
+.RB [ \-d
+.IR depth
+.RB "| " \-\-depth
+.IR depth ]
+.RB [ \-h " | " \-\-human-readable ]
+.RB [ \-\-help ]
+.RB [ \-i " | " \-\-inodes ]
+.RB [ \-r " | " \-\-reverse]
+.RB [ \-s " | " \-\-sort]
+.RB [ \-t " | " \-\-tree]
+.RB [ \-v " | " \-\-version]
+.RI [ path ...]
+.SH DESCRIPTION
+.B xdu
+merges the useful behavior of
+.BR du (1),
+.BR sort (1),
+and
+.BR tree (1):
+directory size and inode accounting, ordering by size or count, lexically,
+and hierarchical display.
+Uses apparent sizes via
+.BR lstat (2).
+Symlinks are never followed. Standard library only, no external runtime
+dependencies.
+.SH OPTIONS
+.TP
+.B "\-a, \-\-all"
+Include hidden files and directories (basename starts with `.').
+Explicitly supplied hidden paths are always scanned.
+.TP
+.B "\-c, \-\-total"
+Print grand total after all results as "<value><TAB>total".
+.TP
+.BI "\-C " mode ", \-\-color " mode
+Color mode: auto, always, never. Default auto.
+.BI \-\-color= mode
+is accepted.
+.TP
+.BI "\-d " depth ", \-\-depth " depth
+Max visible depth (0 = root only, \-1 unlimited). Display-only; totals
+still include pruned descendants. In list mode limits shown directory depth.
+.TP
+.B "\-h, \-\-human\-readable"
+Human-readable sizes (binary units B, KiB, MiB, ...). Rejected with \-i.
+.TP
+.B \-\-help
+Print usage and exit 0.
+.TP
+.B "\-i, \-\-inodes"
+Show inode counts instead of bytes.
+.TP
+.B "\-r, \-\-reverse"
+Reverse sort. With \-s: largest first (desc).
+.TP
+.B "\-s, \-\-sort"
+Sort smallest first (asc). Without sorting flags output is lexical.
+.TP
+.B "\-t, \-\-tree"
+Render as a tree instead of a flat list.
+.TP
+.B "\-v, \-\-version"
+Print version and exit 0.
+.SH OPERANDS
+Each
+.I path
+may be a file or directory. No path scans
+.RI ' . "'. Multiple paths are processed"
+independently in argument order; overlapping paths count independently per
+path (and once more with
+.BR \-c ).
+.SH ENVIRONMENT
+.TP
+.B NO_COLOR
+When non-empty, disables color in auto mode.
+.B \-\-color
+always overrides it.
+.SH EXIT STATUS
+.TP
+.B 0
+Success, no scan errors.
+.TP
+.B 1
+One or more entries skipped (permission, vanishing file). Partial results
+printed; warnings go to stderr as "xdu: <path>: <error>".
+.TP
+.B 2
+Usage error (unknown flag, invalid value, illegal combination).
+.SH EXAMPLES
+List the current directory (like
+.BR du ):
+.IP
+.EX
+xdu
+.EE
+.PP
+List with human-readable sizes for a specific path:
+.IP
+.EX
+xdu -h .
+.EE
+.PP
+List inode counts and print a grand total:
+.IP
+.EX
+xdu -i -c my-folder
+.EE
+.PP
+Render a tree:
+.IP
+.EX
+xdu -t my-folder
+.EE
+.PP
+Render a tree that includes hidden entries:
+.IP
+.EX
+xdu -t -a my-folder
+.EE
+.PP
+Limit tree depth to one level:
+.IP
+.EX
+xdu -t -d 1 my-folder
+.EE
+.PP
+Sort by size in the tree, largest first, with human-readable sizes and a grand
+total:
+.IP
+.EX
+xdu -t -s -r -c -h my-folder
+.EE
+.PP
+Control color:
+.IP
+.EX
+xdu --color never -t my-folder
+xdu --color always -t my-folder
+NO_COLOR=1 xdu -t my-folder
+.EE
+.PP
+Hidden file handling:
+.IP
+.EX
+xdu my-folder        # hidden files excluded
+xdu -a my-folder     # hidden files included
+xdu .hidden-folder   # explicitly given hidden path is always scanned
+.EE
+.SH NOTES
+.B xdu
+reports apparent sizes from
+.BR Lstat ,
+not allocated blocks on disk. This matches
+.B du --apparent-size
+rather than the default
+.B du
+block count. Directory totals are the sum of included descendants.
+Symlinked directories are shown as links and are not recursed, so
+a symlink loop cannot occur.
+.SH SEE ALSO
+.BR du (1),
+.BR tree (1),
+.BR sort (1)
+.SH AUTHORS
+Frederico Martins.
