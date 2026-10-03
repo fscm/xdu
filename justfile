@@ -87,7 +87,7 @@ dist os arch:
     @{{ RM }} "{{ join(DIST_DIR, PROJECT_NAME) }}-{{ os }}-{{ arch }}"*
     # Building distribution package for {{ os }}-{{ arch }}...
     @{{ \
-        if path_exists(join(TMPDIR, PROJECT_NAME)) != 'true' { \
+        if path_exists(join(BUILD_DIR, os, arch, PROJECT_NAME)) != 'true' { \
             f'just build {{os}} {{arch}}' \
         } else { \
             '' \
